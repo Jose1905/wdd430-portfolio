@@ -1,20 +1,23 @@
+'use client';
+
 import ProjectList from '@/components/ProjectList';
-const projects = [
-  {
-    title: 'Service Project management website',
-    description: 'A web backend project for managing service projects.',
-    technologies: ['JavaScript', 'CSS', 'Node.js', 'Express.js', 'PostgreSQL'],
-    link: 'https://github.com/Jose1905/cse340-course-repo'
-  },
-  {
-    title: 'Pokemon data analysis',
-    description: 'A basic demonstration of how to analyze data using R.',
-    technologies: ['R'],
-    link: 'https://github.com/your-username/project2'
-  }
-];
+import type { Project } from '@/lib/projects-db';
+import { useEffect, useState } from 'react';
 
 export default function Home() { 
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetch('/api/projects')
+    .then((response) => {
+      if (!response.ok) throw new Error('could not load projects');
+      return response.json();
+    })
+    .then((data) => setProjects(data.projectList))
+    .catch((err: Error) => setError(err.message));
+  }, []);
+
   return (
     <main className="container mx-auto px-4 py-12">
       <section className="text-center py-12">
