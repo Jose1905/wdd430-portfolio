@@ -7,7 +7,7 @@ export async function GET(
 ) {
     const { id: rawId } = await params;
     const id = Number(rawId);
-    const project = getProjectById(id);
+    const project = await getProjectById(id);
 
     if (!Number.isInteger(id) || id <= 0) {
         return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
