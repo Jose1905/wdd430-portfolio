@@ -1,33 +1,17 @@
-'use client';
+import OpensourceProjectList from '@/components/OpensourceProjectList';
+import Loading from '@/app/projects/opensource/loading';
+import { Suspense } from 'react';
 
-import ProjectList from '@/components/ProjectList';
-import type { Project } from '@/lib/projects-db';
-import { useEffect, useState } from 'react';
-
-export default function OpenSourceProjects() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    fetch('/api/projects?type=opensource')
-    .then((response) => {
-      if (!response.ok) throw new Error('could not load projects');
-      return response.json();
-    })
-    .then((data) => setProjects(data.projectList))
-    .catch((err: Error) => setError(err.message));
-  }, []);
-
+export default function OpensourceProjects() {
   return (
     <main className="container mx-auto px-4 py-12">
       <section className="text-center py-12">
         <h1 className="text-4xl font-bold mb-4">Opensource Projects</h1>
-        {error && <p role="alert">{error}</p>}
       </section>
-      
-      <section>
-        <ProjectList projects={projects} />
-      </section>
+
+      <Suspense fallback={<Loading />}>
+        <OpensourceProjectList />
+      </Suspense>
     </main>
   );
 }

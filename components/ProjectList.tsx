@@ -1,4 +1,4 @@
-import ProjectCard from './ProjectCard';
+import ProjectCard from "./ProjectCard";
 
 interface Project {
   title: string;
