@@ -10,6 +10,8 @@ export interface Project {
   link?: string;
 }
 
+const ITEMS_PER_PAGE = 3;
+
 export async function getProjects(type?: string | null): Promise<Project[]> {
   if (type) {
     const { rows } = await sql<Project>`
@@ -19,6 +21,35 @@ export async function getProjects(type?: string | null): Promise<Project[]> {
   }
   const { rows } = await sql<Project>`SELECT * FROM projects ORDER BY id`;
   return rows;
+}
+
+export async function fetchFilteredProjects(
+  query: string,
+  currentPage: number,
+): Promise<Project[]> {
+  const searchTerm = `%${query}%`;
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+  const { rows } = await sql<Project>`
+    SELECT * FROM projects
+    WHERE title ILIKE ${searchTerm}
+      OR description ILIKE ${searchTerm}
+      OR array_to_string(technologies, ' ') ILIKE ${searchTerm}
+    ORDER BY id
+    LIMIT ${ITEMS_PER_PAGE}
+    OFFSET ${offset}
+  `;
+  return rows;
+}
+
+export async function fetchProjectsPages(query: string): Promise<number> {
+  const searchTerm = `%${query}%`;
+  const { rows } = await sql<{ count: number }>`
+    SELECT COUNT(*)::int AS count FROM projects
+    WHERE title ILIKE ${searchTerm}
+      OR description ILIKE ${searchTerm}
+      OR array_to_string(technologies, ' ') ILIKE ${searchTerm}
+  `;
+  return Math.ceil((rows[0]?.count ?? 0) / ITEMS_PER_PAGE);
 }
 
 export async function getProjectById(id: number): Promise<Project | null> {
