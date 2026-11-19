@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import NavLinks from "./NavLinks";
 
@@ -7,7 +8,9 @@ export default function Header() {
       <div id="header-title" className="text-2xl font-bold">
         David Vega
       </div>
-      <NavLinks/>
+      <Suspense fallback={<div className="h-6" aria-hidden="true" />}>
+        <NavLinks />
+      </Suspense>
     </header>
   );
 }

@@ -1,4 +1,8 @@
+import Link from "next/link";
+import { deleteProject } from "@/lib/actions";
+
 interface ProjectCardProps {
+  id: number;
   title: string;
   description: string;
   technologies: string[];
@@ -6,6 +10,7 @@ interface ProjectCardProps {
 }
 
 export default function ProjectCard({
+  id,
   title,
   description,
   technologies,
@@ -30,6 +35,22 @@ export default function ProjectCard({
           </a>
         </p>
       )}
+      <div className="mt-4 flex gap-2">
+        <Link
+          href={`/projects/${id}/edit`}
+          className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
+        >
+          Edit
+        </Link>
+        <form action={deleteProject.bind(null, id)}>
+          <button
+            type="submit"
+            className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700"
+          >
+            Delete
+          </button>
+        </form>
+      </div>
     </article>
   );
 }

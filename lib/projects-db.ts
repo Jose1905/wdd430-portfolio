@@ -10,7 +10,7 @@ export interface Project {
   link?: string;
 }
 
-const ITEMS_PER_PAGE = 3;
+const ITEMS_PER_PAGE = 5;
 
 export async function getProjects(type?: string | null): Promise<Project[]> {
   if (type) {
