@@ -1,11 +1,21 @@
 import { Suspense } from "react";
 import { updateProject } from "@/lib/actions";
+import { getProjectById } from "@/lib/projects-db";
+import { notFound } from "next/navigation";
 
 type EditPageProps = { params: Promise<{ id: string }> };
 
 async function EditProjectForm({ params }: EditPageProps) {
   const { id: routeId } = await params;
   const id = Number(routeId);
+  if (!Number.isSafeInteger(id) || id < 1) {
+    notFound();
+  }
+
+  const project = await getProjectById(id);
+  if (!project) {
+    notFound();
+  }
 
   return (
     <main className="mx-auto max-w-xl px-4 py-12">
@@ -17,6 +27,7 @@ async function EditProjectForm({ params }: EditPageProps) {
             id="title"
             name="title"
             required
+            defaultValue={project.title}
             className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20"
           />
         </div>
@@ -28,6 +39,7 @@ async function EditProjectForm({ params }: EditPageProps) {
             name="description"
             rows={5}
             required
+            defaultValue={project.description}
             className="w-full resize-y rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20"
           />
         </div>
@@ -38,6 +50,7 @@ async function EditProjectForm({ params }: EditPageProps) {
             id="technologies"
             name="technologies"
             required
+            defaultValue={project.technologies.join(", ")}
             className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20"
           />
         </div>
