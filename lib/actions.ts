@@ -6,56 +6,76 @@ import { revalidatePath } from "next/cache";
 import { redirect, notFound } from "next/navigation";
 import { getProjectById } from "./projects-db";
 
-const ProjectFormSchema = z.object({
-  title: z.string().min(2),
-  description: z.string().min(10),
-  technologies: z
+const currentYear = new Date().getFullYear();
+
+const CreateProjectSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters."),
+  description: z
     .string()
-    .min(2)
-    .transform((value) =>
-      value
-        .split(",")
-        .map((technology) => technology.trim())
-        .filter(Boolean),
-    )
-    .refine((technologies) => technologies.length > 0, {
-      message: "At least one technology is required.",
-    }),
+    .min(20, "Description must be at least 20 characters."),
+  technologies: z.string().min(2, "Add at least one technology."),
+  link: z
+    .union([z.string().url("Link must be a valid URL."), z.literal("")])
+    .nullable(),
+  year_completed: z.coerce
+    .number()
+    .int("Year must be a whole number.")
+    .gte(2000, "Year must be 2000 or later.")
+    .lte(currentYear, `Year cannot be greater than ${currentYear}`),
 });
 
-export async function deleteProject(id: number) {
-  try {
-    await sql`DELETE FROM projects WHERE id = ${id}`;
-    revalidatePath("/projects");
-  } catch (error) {
-    console.error('Error deleting project:', error);
-    throw new Error('Failed to delete project. Please try again later.');
-  }
-  revalidatePath("/projects");
-  redirect("/projects");
-}
-
-export async function createProject(formData: FormData) {
-  const raw = {
-    title: formData.get("title"),
-    description: formData.get("description"),
-    technologies: formData.get("technologies"),
+export type State = {
+  errors?: {
+    title?: string[];
+    description?: string[];
+    technologies?: string[];
+    link?: string[];
+    year_completed?: string[];
   };
+  message?: string | null;
+};
 
-  const parsed = ProjectFormSchema.safeParse(raw);
-  if (!parsed.success) {
-    throw new Error("Invalid project input.");
+export async function createProject(_prevState: State, formData: FormData): Promise<State> {
+  const validatedFields = CreateProjectSchema.safeParse({
+    title: formData.get('title'),
+    description: formData.get('description'),
+    technologies: formData.get('technologies'),
+    link: formData.get('link') || null,
+    year_completed: formData.get('year_completed')
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing or invalid fields. Failed to create project'
+    };
   }
 
-  const { title, description, technologies } = parsed.data;
+  const { title, description, technologies, link, year_completed } = validatedFields.data;
 
-  await sql`
-        INSERT INTO projects (title, description, technologies)
-        VALUES (${title}, ${description}, string_to_array(${technologies.join(",")}, ','))
+  try {
+    await sql`
+      INSERT INTO projects (title, description, technologies, link, year_completed)
+      VALUES (
+        ${title},
+        ${description},
+        ARRAY(
+          SELECT btrim(value)
+          FROM unnest(string_to_array(${technologies}, ',')) AS tech(value)
+          WHERE btrim(value) <> ''
+        ),
+        ${link},
+        ${year_completed}
+      )
     `;
+  } catch (error) {
+    return {
+      message: `Database Error: Failed to create project. Error: ${error instanceof Error ? error.message : String(error)}`
+    };
+  }
 
-  revalidatePath("/projects");
-  redirect("/projects");
+  revalidatePath('/projects');
+  redirect('/projects');
 }
 
 export async function updateProject(id: number, formData: FormData) {
@@ -63,6 +83,8 @@ export async function updateProject(id: number, formData: FormData) {
     title: formData.get("title"),
     description: formData.get("description"),
     technologies: formData.get("technologies"),
+    link: formData.get("link"),
+    year_completed: formData.get("year_completed"),
   };
 
   const project = await getProjectById(id);
@@ -70,19 +92,38 @@ export async function updateProject(id: number, formData: FormData) {
     notFound();
   }
 
-  const parsed = ProjectFormSchema.safeParse(raw);
+  const parsed = CreateProjectSchema.safeParse(raw);
   if (!parsed.success) {
     throw new Error("Invalid project input.");
   }
 
-  const { title, description, technologies } = parsed.data;
+  const { title, description, technologies, link, year_completed } = parsed.data;
+
+  console.log(`title: ${title}, description: ${description}, technologies: ${technologies}, link: ${link}, year_completed: ${year_completed}`);
 
   await sql`
         UPDATE projects
-        SET title = ${title}, description = ${description}, technologies = string_to_array(${technologies.join(",")}, ',')
+        SET title = ${title}, description = ${description}, technologies = ARRAY(
+              SELECT btrim(value)
+              FROM unnest(string_to_array(${technologies}, ',')) AS tech(value)
+              WHERE btrim(value) <> ''
+            ),
+            link = ${link || null}, year_completed = ${year_completed}
         WHERE id = ${id}
     `;
 
+  revalidatePath("/projects");
+  redirect("/projects");
+}
+
+export async function deleteProject(id: number) {
+  try {
+    await sql`DELETE FROM projects WHERE id = ${id}`;
+    revalidatePath("/projects");
+  } catch (error) {
+    console.error("Error deleting project:", error);
+    throw new Error("Failed to delete project. Please try again later.");
+  }
   revalidatePath("/projects");
   redirect("/projects");
 }

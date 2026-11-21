@@ -55,6 +55,29 @@ async function EditProjectForm({ params }: EditPageProps) {
           />
         </div>
 
+        <div className="space-y-2">
+          <label htmlFor="link" className="block text-sm font-medium text-gray-700">Link</label>
+          <input
+            id="link"
+            name="link"
+            type="url"
+            defaultValue={project.link}
+            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="year_completed" className="block text-sm font-medium text-gray-700">Year Completed</label>
+          <input
+            id="year_completed"
+            name="year_completed"
+            type="number"
+            required
+            defaultValue={project.year_completed}
+            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20"
+          />
+        </div>
+
         <button
           type="submit"
           className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
