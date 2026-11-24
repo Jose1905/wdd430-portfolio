@@ -1,10 +1,12 @@
 "use server";
 
-import { z } from "zod";
+import { fromJSONSchema, z } from "zod";
 import { sql } from "@vercel/postgres";
 import { revalidatePath } from "next/cache";
 import { redirect, notFound } from "next/navigation";
 import { getProjectById } from "./projects-db";
+import { signIn } from "@/auth";
+import { AuthError } from "next-auth";
 
 const currentYear = new Date().getFullYear();
 
@@ -126,4 +128,24 @@ export async function deleteProject(id: number) {
   }
   revalidatePath("/projects");
   redirect("/projects");
+}
+
+export async function authenticate(
+  prevState: string | undefined,
+  formData: FormData
+) {
+  try {
+    await signIn('credentials', formData);
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case 'CredentialsSignin':
+          return 'Invalid email or password.';
+        default:
+          return 'Something went wrong.';
+      }
+    }
+
+    throw error; //re-throw so Next.js handles redirects correctly
+  }
 }
