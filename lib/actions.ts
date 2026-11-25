@@ -1,12 +1,13 @@
 "use server";
 
-import { fromJSONSchema, z } from "zod";
+import { z } from "zod";
 import { sql } from "@vercel/postgres";
 import { revalidatePath } from "next/cache";
 import { redirect, notFound } from "next/navigation";
 import { getProjectById } from "./projects-db";
 import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
+import { auth } from "@/auth";
 
 const currentYear = new Date().getFullYear();
 
@@ -37,7 +38,15 @@ export type State = {
   message?: string | null;
 };
 
+async function requireOwnerSession() {
+  const session = await auth();
+  if (!session?.user) throw new Error('Not authenticated');
+  return session;
+}
+
 export async function createProject(_prevState: State, formData: FormData): Promise<State> {
+  await requireOwnerSession();
+
   const validatedFields = CreateProjectSchema.safeParse({
     title: formData.get('title'),
     description: formData.get('description'),
@@ -76,11 +85,13 @@ export async function createProject(_prevState: State, formData: FormData): Prom
     };
   }
 
-  revalidatePath('/projects');
-  redirect('/projects');
+  revalidatePath('/dashboard/projects');
+  redirect('/dashboard/projects');
 }
 
 export async function updateProject(id: number, formData: FormData) {
+  await requireOwnerSession();
+  
   const raw = {
     title: formData.get("title"),
     description: formData.get("description"),
@@ -114,20 +125,22 @@ export async function updateProject(id: number, formData: FormData) {
         WHERE id = ${id}
     `;
 
-  revalidatePath("/projects");
-  redirect("/projects");
+  revalidatePath("/dashboard/projects");
+  redirect("/dashboard/projects");
 }
 
 export async function deleteProject(id: number) {
+  await requireOwnerSession();
+  
   try {
     await sql`DELETE FROM projects WHERE id = ${id}`;
-    revalidatePath("/projects");
+    revalidatePath("/dashboard/projects");
   } catch (error) {
     console.error("Error deleting project:", error);
     throw new Error("Failed to delete project. Please try again later.");
   }
-  revalidatePath("/projects");
-  redirect("/projects");
+  revalidatePath("/dashboard/projects");
+  redirect("/dashboard/projects");
 }
 
 export async function authenticate(

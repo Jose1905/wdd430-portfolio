@@ -11,6 +11,12 @@ export interface Project {
   year_completed?: number;
 }
 
+export interface User {
+  id: number;
+  email: string;
+  password_hash: string;
+}
+
 const ITEMS_PER_PAGE = 5;
 
 export async function getProjects(type?: string | null): Promise<Project[]> {
@@ -56,6 +62,15 @@ export async function fetchProjectsPages(query: string): Promise<number> {
 export async function getProjectById(id: number): Promise<Project | null> {
   const { rows } = await sql<Project>`
     SELECT * FROM projects WHERE id = ${id}
+  `;
+  return rows[0] ?? null;
+}
+
+export async function getUserByEmail(email: string): Promise<User | null> {
+  const { rows } = await sql<User>`
+    SELECT *
+    FROM users
+    WHERE email = ${email}
   `;
   return rows[0] ?? null;
 }

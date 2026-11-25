@@ -20,15 +20,6 @@ export default function NavLinks() {
         </li>
         <li>
           <Link
-            href="/about"
-            className={pathname === "/about" ? "active" : ""}
-            aria-current={pathname === "/about" ? "page" : undefined}
-          >
-            About
-          </Link>
-        </li>
-        <li>
-          <Link
             href="/projects"
             className={pathname === "/about" ? "active" : ""}
             aria-current={pathname === "/about" ? "page" : undefined}
@@ -43,6 +34,15 @@ export default function NavLinks() {
             aria-current={pathname === "/about" ? "page" : undefined}
           >
             Contact Information
+          </Link>
+        </li>
+        <li>
+          <Link
+            href="/login"
+            className={pathname === "/about" ? "active" : ""}
+            aria-current={pathname === "/about" ? "page" : undefined}
+          >
+            Log in
           </Link>
         </li>
       </ul>

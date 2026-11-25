@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   title: "Jose's Portfolio",
@@ -17,7 +18,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="bg-slate-50 text-slate-900 antialiased">
         <Header />
-        {children}
+        <SessionProvider>{children}</SessionProvider>
         <Footer />
       </body>
     </html>
