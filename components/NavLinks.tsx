@@ -2,49 +2,66 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
 
-export default function NavLinks() {
+type NavLinksProps = {
+  isLoggedIn: boolean;
+  signOutButton: ReactNode;
+};
+
+export default function NavLinks({ isLoggedIn, signOutButton }: NavLinksProps) {
   const pathname = usePathname();
+
+  function getLinkState(href: string) {
+    const isActive =
+      pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
+
+    return {
+      className: isActive ? "active" : "",
+      "aria-current": isActive ? ("page" as const) : undefined,
+    };
+  }
 
   return (
     <nav className="max-w-4xl mx-auto px-4 flex justify-between items-center">
       <ul className="flex gap-6">
         <li>
-          <Link
-            href="/"
-            className={pathname === "/about" ? "active" : ""}
-            aria-current={pathname === "/about" ? "page" : undefined}
-          >
+          <Link href="/" {...getLinkState("/")}>
             Home
           </Link>
         </li>
+
         <li>
-          <Link
-            href="/projects"
-            className={pathname === "/about" ? "active" : ""}
-            aria-current={pathname === "/about" ? "page" : undefined}
-          >
-            Projects
-          </Link>
-        </li>
-        <li>
-          <Link
-            href="/contact"
-            className={pathname === "/about" ? "active" : ""}
-            aria-current={pathname === "/about" ? "page" : undefined}
-          >
+          <Link href="/contact" {...getLinkState("/contact")}>
             Contact Information
           </Link>
         </li>
-        <li>
-          <Link
-            href="/login"
-            className={pathname === "/about" ? "active" : ""}
-            aria-current={pathname === "/about" ? "page" : undefined}
-          >
-            Log in
-          </Link>
-        </li>
+
+        {!isLoggedIn && (
+          <li>
+            <Link href="/projects" {...getLinkState("/projects")}>
+              Projects
+            </Link>
+          </li>
+        )}
+
+        {!isLoggedIn && (
+          <li>
+            <Link href="/login" {...getLinkState("/login")}>
+              Log in
+            </Link>
+          </li>
+        )}
+
+        {isLoggedIn && (
+          <li>
+            <Link href="/dashboard/projects" {...getLinkState("/dashboard/projects")}>
+              Projects
+            </Link>
+          </li>
+        )}
+
+        {isLoggedIn && <li>{signOutButton}</li>}
       </ul>
     </nav>
   );

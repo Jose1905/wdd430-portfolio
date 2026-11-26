@@ -35,14 +35,26 @@ async function ProjectsResults({ searchParams }: ProjectsPageProps) {
   );
 }
 
-export default async function DashboardPage({ searchParams }: ProjectsPageProps) {
+async function DashboardWelcome() {
   const session = await auth();
-  const user = session?.user;
-  
+
+  return <p>Welcome, {session?.user?.email}!</p>;
+}
+
+export default function DashboardPage({ searchParams }: ProjectsPageProps) {
   return (
     <main className="container mx-auto px-4 py-12">
       <section className="text-center py-12">
-        <p>Welcome, {user?.name}!</p>
+        <Suspense
+          fallback={
+            <div
+              aria-label="Loading account"
+              className="mx-auto mb-2 h-5 w-48 animate-pulse rounded bg-slate-200"
+            />
+          }
+        >
+          <DashboardWelcome />
+        </Suspense>
         <h1 className="text-4xl font-bold mb-4">Projects Overview</h1>
         <Suspense fallback={<div className="h-10" aria-hidden="true" />}>
           <ProjectSearch />

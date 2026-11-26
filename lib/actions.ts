@@ -9,23 +9,25 @@ import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
 import { auth } from "@/auth";
 
-const currentYear = new Date().getFullYear();
+function getCreateProjectSchema() {
+  const currentYear = new Date().getFullYear();
 
-const CreateProjectSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters."),
-  description: z
-    .string()
-    .min(20, "Description must be at least 20 characters."),
-  technologies: z.string().min(2, "Add at least one technology."),
-  link: z
-    .union([z.string().url("Link must be a valid URL."), z.literal("")])
-    .nullable(),
-  year_completed: z.coerce
-    .number()
-    .int("Year must be a whole number.")
-    .gte(2000, "Year must be 2000 or later.")
-    .lte(currentYear, `Year cannot be greater than ${currentYear}`),
-});
+  return z.object({
+    title: z.string().min(3, "Title must be at least 3 characters."),
+    description: z
+      .string()
+      .min(20, "Description must be at least 20 characters."),
+    technologies: z.string().min(2, "Add at least one technology."),
+    link: z
+      .union([z.string().url("Link must be a valid URL."), z.literal("")])
+      .nullable(),
+    year_completed: z.coerce
+      .number()
+      .int("Year must be a whole number.")
+      .gte(2000, "Year must be 2000 or later.")
+      .lte(currentYear, `Year cannot be greater than ${currentYear}`),
+  });
+}
 
 export type State = {
   errors?: {
@@ -47,7 +49,7 @@ async function requireOwnerSession() {
 export async function createProject(_prevState: State, formData: FormData): Promise<State> {
   await requireOwnerSession();
 
-  const validatedFields = CreateProjectSchema.safeParse({
+  const validatedFields = getCreateProjectSchema().safeParse({
     title: formData.get('title'),
     description: formData.get('description'),
     technologies: formData.get('technologies'),
@@ -105,7 +107,7 @@ export async function updateProject(id: number, formData: FormData) {
     notFound();
   }
 
-  const parsed = CreateProjectSchema.safeParse(raw);
+  const parsed = getCreateProjectSchema().safeParse(raw);
   if (!parsed.success) {
     throw new Error("Invalid project input.");
   }
@@ -126,7 +128,7 @@ export async function updateProject(id: number, formData: FormData) {
     `;
 
   revalidatePath("/dashboard/projects");
-  redirect("/dashboard/projects");
+  redirect("/projects");
 }
 
 export async function deleteProject(id: number) {
@@ -148,7 +150,10 @@ export async function authenticate(
   formData: FormData
 ) {
   try {
-    await signIn('credentials', formData);
+    await signIn('credentials', {
+      ...Object.fromEntries(formData),
+      redirectTo: '/dashboard/projects',
+    });
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
