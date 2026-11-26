@@ -3,6 +3,11 @@ import ProjectList from "@/components/ProjectList";
 import Pagination from "@/components/Pagination";
 import { fetchFilteredProjects, fetchProjectsPages } from "@/lib/projects-db";
 import { Suspense } from "react";
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Project list',
+};
 
 type ProjectsPageProps = {
   searchParams: Promise<{

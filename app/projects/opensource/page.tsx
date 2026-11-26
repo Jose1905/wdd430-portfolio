@@ -1,6 +1,11 @@
 import OpensourceProjectList from '@/components/OpensourceProjectList';
 import Loading from '@/app/projects/opensource/loading';
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Open Source',
+};
 
 export default function OpensourceProjects() {
   return (

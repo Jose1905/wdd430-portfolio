@@ -2,8 +2,39 @@ import { Suspense } from "react";
 import { updateProject } from "@/lib/actions";
 import { getProjectById } from "@/lib/projects-db";
 import { notFound } from "next/navigation";
+import type { Metadata } from 'next';
 
 type EditPageProps = { params: Promise<{ id: string }> };
+
+export async function generateMetadata({ params }: EditPageProps): Promise<Metadata> {
+  const { id: routeId } = await params;
+  const id = Number(routeId);
+
+  if (!Number.isSafeInteger(id) || id < 1) {
+    return {
+      title: 'Project Not Found',
+      description: 'The requested portfolio project could not be found.',
+    };
+  }
+
+  const project = await getProjectById(id);
+
+  if (!project) {
+    return {
+      title: 'Project Not Found',
+      description: 'The requested portfolio project could not be found.',
+    };
+  }
+
+  return {
+    title: project.title,
+    description: project.description,
+    openGraph: {
+      title: project.title,
+      description: project.description,
+    },
+  };
+}
 
 async function EditProjectForm({ params }: EditPageProps) {
   const { id: routeId } = await params;

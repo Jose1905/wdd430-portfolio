@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { deleteProject } from "@/lib/actions";
 
 interface ProjectCardProps {
   id: number;

@@ -5,6 +5,11 @@ import { fetchFilteredProjects, fetchProjectsPages } from "@/lib/projects-db";
 import { Suspense } from "react";
 import Link from "next/link";
 import { auth } from '@/auth';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Projects dashboard',
+};
 
 type ProjectsPageProps = {
   searchParams: Promise<{

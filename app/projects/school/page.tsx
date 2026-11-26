@@ -1,6 +1,11 @@
 import SchoolProjectList from '@/components/SchoolProjectList';
 import Loading from '@/app/projects/school/loading';
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'School',
+};
 
 export default function SchoolProjects() {
   return (

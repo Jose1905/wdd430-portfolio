@@ -5,10 +5,8 @@ import { createProject, type State } from '@/lib/actions';
 
 const initialState: State = { message: null, errors: {} };
 
-export default function CreateProjectForm() {
+export default function CreateProjectForm({ currentYear }: { currentYear: number }) {
   const [state, formAction, isPending] = useActionState(createProject, initialState);
-
-  const currentYear = new Date().getFullYear();
 
   return (
     <form action={formAction} className="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">

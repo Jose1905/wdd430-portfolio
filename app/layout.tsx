@@ -5,8 +5,13 @@ import Footer from "@/components/Footer";
 import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
-  title: "Jose's Portfolio",
-  description: "A portfolio showcasing projects and experience.",
+  title: {
+    default: 'David Vega | Project Portfolio',
+    template: '%s | Project Portfolio',
+  },
+  description:
+    'A portfolio of web development projects.',
+  metadataBase: new URL('https://wdd430-portfolio-black-alpha.vercel.app/'),
 };
 
 export default function RootLayout({
